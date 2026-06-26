@@ -1,0 +1,39 @@
+name: MERN E-Commerce CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        run: docker build -t mern-ecommerce-backend ./backend
+
+      - name: Build frontend image
+        run: docker build -t mern-ecommerce-frontend ./frontend
+
+      - name: Start project with Docker Compose
+        run: docker compose up -d --build
+
+      - name: Show running containers
+        run: docker ps
+
+      - name: Test backend home route
+        run: |
+          sleep 15
+          curl -f http://localhost:5000/
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
